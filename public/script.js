@@ -4,23 +4,41 @@ const canvas = document.getElementById('canvas')
 const c = canvas.getContext('2d')
 
 let storedFigures = []
+let username = ''
+
+function registerUser(){
+    c.clearRect(0, 0, canvas.width, canvas.height)
+    let input = document.getElementById('username_field')
+    let draw_btn = document.getElementById('draw')
+    let user_message = document.getElementById('user_message')
+    if(input.value.length >= 6){
+        
+        //Unlock draw button
+        if(draw_btn.disabled == true){ draw_btn.disabled = false}
+        username = input.value
+        user_message.innerHTML = `You are now logged in as : <b>${username}</b>`
+        redraw()
+    }
+    else{
+        if(draw_btn.disabled == false){ draw_btn.disabled = true }
+        username = input.value
+        user_message.innerHTML = `You are no longer registered. Register to be able to see your drawings`
+        redraw()
+    }
+}
 
 addEventListener('load', () => {
     canvas.width = innerWidth
     canvas.height = innerHeight
-    redraw()
+    let input = document.getElementById('username_field')
+    input.value = ''
 })
-
 
 addEventListener('resize', () => {
     canvas.width = innerWidth
     canvas.height = innerHeight
     redraw()
 })
-
-function clearStorage(){
-    localStorage.setItem('Fig', JSON.stringify([]))
-}
 
 function redraw(){
     getData().then((loadedFigure) => {
@@ -70,6 +88,7 @@ function drawTriangle(figSize = parseInt(document.getElementById('figure_size').
     c.fill()
 
     let triangle = {
+        user: username,
         forme: 'triangle',
         figSize: figSize,
         borderSize: borderSize,
@@ -93,6 +112,7 @@ function drawSquare(figSize = parseInt(document.getElementById('figure_size').va
     c.fill()
 
     let square = {
+        user: username,
         forme: 'square',
         figSize: figSize,
         borderSize: borderSize,
@@ -118,6 +138,7 @@ function drawCircle(figSize = parseInt(document.getElementById('figure_size').va
     c.fill()
 
     let circle = {
+        user: username,
         forme: 'circle',
         figSize: figSize,
         borderSize: borderSize,
@@ -138,7 +159,7 @@ function getStartingPoint(figSize, borderSize){
 }
 
 function sendData(data){
-    fetch('http://91.170.215.82/submit_figure', 
+    fetch('http://91.170.215.82:80/submit_figure', 
     {
         headers: {
             'Accept': 'application/json',
@@ -151,13 +172,14 @@ function sendData(data){
 
 function getData(){
     return new Promise((resolve, reject) => {
-        fetch('http://91.170.215.82/get_figures',
+        fetch('http://91.170.215.82:80/get_figures',
         {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            method: 'POST'
+            method: 'POST',
+            body: JSON.stringify({user: username})
         }).then(res => {
             return res.json()
         }).then(data => {

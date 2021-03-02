@@ -8,6 +8,10 @@
     margin-right: 1rem;
 }
 
+.userinfo{
+    margin-bottom: 1rem;
+}
+
 #canvas{
     border: 2px solid black;
 }

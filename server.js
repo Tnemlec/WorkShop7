@@ -23,7 +23,9 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 
 app.post('/get_figures', (req, res) => {
-  db.collection('figures').find({}).toArray(function (err, result){
+  user = req.body.user
+  console.log(user)
+  db.collection('figures').find({user: user}).toArray(function (err, result){
     if(err) throw err
     res.send(result)
   })
