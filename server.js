@@ -22,20 +22,22 @@ app.use(bodyParser.urlencoded({extended: true}))
 
 app.use(bodyParser.json())
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
+app.post('/get_figures', (req, res) => {
+  db.collection('figures').find({}).toArray(function (err, result){
+    if(err) throw err
+    res.send(result)
+  })
 })
 
 app.post('/submit_figure', (req, res) => {
-    console.log(req.body)
     //Add to mongo db
-    db.collection('figures').insertOne(req.body, function(err, res){
-      if(err) throw err
-      console.log('1 Document inserted')
-    })
-    res.status(200).json({
-      message: 'OK'
-    })
+  db.collection('figures').insertOne(req.body, function(err, res){
+    if(err) throw err
+    console.log('1 Document inserted')
+  })
+  res.status(200).json({
+    message: 'OK'
+  })
 })
 
 app.listen(port, () => {
