@@ -159,7 +159,7 @@ function getStartingPoint(figSize, borderSize){
 }
 
 function sendData(data){
-    fetch('http://91.170.215.82:80/submit_figure', 
+    fetch('http://localhost:80/submit_figure', 
     {
         headers: {
             'Accept': 'application/json',
@@ -172,7 +172,7 @@ function sendData(data){
 
 function getData(){
     return new Promise((resolve, reject) => {
-        fetch('http://91.170.215.82:80/get_figures',
+        fetch('http://localhost:80/get_figures',
         {
             headers: {
                 'Accept': 'application/json',
