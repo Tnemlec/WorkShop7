@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const db = require('mongodb')
+const mongodb = require('mongodb')
 
 const app = express()
 const port = 80
@@ -8,17 +8,13 @@ const port = 80
 const DATABASE_NAME = 'FiguresDB'
 const MONGO_URL = `mongodb://localhost:27017/${DATABASE_NAME}`
 
-const client = new db.MongoClient(MONGO_URL)
+let client = new mongodb.MongoClient(MONGO_URL)
 
-let figureDB = null
-
-try{
-  client.connect((error, client) => {
-    figureDB = client.db('figures')    
-  })
-}catch(e){
-  console.log(e)
-}
+client.connect().then(client => {
+  db = client.db(DATABASE_NAME)
+}).catch(err => {
+  console.log(err)
+})
 
 app.use(express.static('public'))
 
@@ -32,6 +28,11 @@ app.get('/', (req, res) => {
 
 app.post('/submit_figure', (req, res) => {
     console.log(req.body)
+    //Add to mongo db
+    db.collection('figures').insertOne(req.body, function(err, res){
+      if(err) throw err
+      console.log('1 Document inserted')
+    })
     res.status(200).json({
       message: 'OK'
     })
