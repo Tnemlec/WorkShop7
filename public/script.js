@@ -8,31 +8,37 @@ let storedFigures = []
 addEventListener('load', () => {
     canvas.width = innerWidth
     canvas.height = innerHeight
-    var loadedFigure = JSON.parse(localStorage.getItem('Fig')) || null;
-    if(loadedFigure){
-        for(let i = 0; i < loadedFigure.length; i++){
-            if(loadedFigure[i].forme == 'triangle'){
-                drawTriangle(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor)
-            }
-            else if(loadedFigure[i].forme == 'square'){
-                drawSquare(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor)
-            }
-            else if(loadedFigure[i].forme == 'circle'){
-                drawCircle(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor)
-            }
-            localStorage.setItem('Fig', JSON.stringify(storedFigures));
-        }        
-    }
+    redraw()
 })
 
 
 addEventListener('resize', () => {
     canvas.width = innerWidth
     canvas.height = innerHeight
+    redraw()
 })
 
 function clearStorage(){
     localStorage.setItem('Fig', JSON.stringify([]))
+}
+
+function redraw(){
+    getData().then((loadedFigure) => {
+        console.log(loadedFigure)
+        if(loadedFigure){
+            for(let i = 0; i < loadedFigure.length; i++){
+                if(loadedFigure[i].forme == 'triangle'){
+                    drawTriangle(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor, false)
+                }
+                else if(loadedFigure[i].forme == 'square'){
+                    drawSquare(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor, false)
+                }
+                else if(loadedFigure[i].forme == 'circle'){
+                    drawCircle(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor, false)
+                }
+            }        
+        }        
+    })
 }
 
 function draw(){
@@ -46,10 +52,10 @@ function draw(){
     else if(forme == 'circle'){
         drawCircle()
     }
-    localStorage.setItem('Fig', JSON.stringify(storedFigures));
+    //localStorage.setItem('Fig', JSON.stringify(storedFigures));
 }
 
-function drawTriangle(figSize = parseInt(document.getElementById('figure_size').value), borderSize = parseInt(document.getElementById('border_thickness').value), start = getStartingPoint(figSize, borderSize), border_color = document.getElementById('div_border').value, background_color = document.getElementById('canvas_background').value){
+function drawTriangle(figSize = parseInt(document.getElementById('figure_size').value), borderSize = parseInt(document.getElementById('border_thickness').value), start = getStartingPoint(figSize, borderSize), border_color = document.getElementById('div_border').value, background_color = document.getElementById('canvas_background').value, new_fig = true){
     c.beginPath()
     c.moveTo(start[0], start[1])
     c.lineTo(start[0], start[1]+figSize)
@@ -71,12 +77,12 @@ function drawTriangle(figSize = parseInt(document.getElementById('figure_size').
         borderColor: border_color,
         backgroundColor: background_color
     }
-
-    storedFigures.push(triangle)
-    sendData(triangle)
+    if(new_fig){
+        sendData(triangle)
+    }
 }
 
-function drawSquare(figSize = parseInt(document.getElementById('figure_size').value), borderSize = parseInt(document.getElementById('border_thickness').value), start = getStartingPoint(figSize, borderSize), border_color = document.getElementById('div_border').value, background_color = document.getElementById('canvas_background').value){
+function drawSquare(figSize = parseInt(document.getElementById('figure_size').value), borderSize = parseInt(document.getElementById('border_thickness').value), start = getStartingPoint(figSize, borderSize), border_color = document.getElementById('div_border').value, background_color = document.getElementById('canvas_background').value, new_fig = true){
     c.rect(start[0], start[1], figSize, figSize)
 
     c.lineWidth = borderSize
@@ -94,12 +100,12 @@ function drawSquare(figSize = parseInt(document.getElementById('figure_size').va
         borderColor: border_color,
         backgroundColor: background_color
     }
-    
-    storedFigures.push(square)
-    sendData(square)
+    if(new_fig){
+        sendData(square)        
+    }
 }
 
-function drawCircle(figSize = parseInt(document.getElementById('figure_size').value), borderSize = parseInt(document.getElementById('border_thickness').value), start = getStartingPoint(figSize, borderSize), border_color = document.getElementById('div_border').value, background_color = document.getElementById('canvas_background').value){
+function drawCircle(figSize = parseInt(document.getElementById('figure_size').value), borderSize = parseInt(document.getElementById('border_thickness').value), start = getStartingPoint(figSize, borderSize), border_color = document.getElementById('div_border').value, background_color = document.getElementById('canvas_background').value, new_fig = true){
     c.beginPath()
     c.arc(start[0], start[1], figSize/2, 0, Math.PI * 2)
     c.closePath()
@@ -119,9 +125,10 @@ function drawCircle(figSize = parseInt(document.getElementById('figure_size').va
         borderColor: border_color,
         backgroundColor: background_color
     }
-
-    storedFigures.push(circle)
-    sendData(circle)
+    if(new_fig){
+        sendData(circle)        
+    }
+    
 }
 
 function getStartingPoint(figSize, borderSize){
@@ -139,5 +146,24 @@ function sendData(data){
         },
         method: 'POST',
         body: JSON.stringify(data)
+    })
+}
+
+function getData(){
+    return new Promise((resolve, reject) => {
+        fetch('http://localhost:80/get_figures',
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            method: 'POST'
+        }).then(res => {
+            return res.json()
+        }).then(data => {
+            resolve(data)
+        }).catch(err => {
+            reject(err)
+        })     
     })
 }
